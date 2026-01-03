@@ -3,7 +3,7 @@ param(
   [int]$Port = 9863,
   [string]$AppId = "ytm_companion",
   [string]$AppName = "YTM TouchPortal V2 (by HellBlazer90)",
-  [string]$AppVersion = "3.0.0",
+  [string]$AppVersion = "5.0.0",
   [string]$OutFile,
   [switch]$NoPause
 )
@@ -49,3 +49,4 @@ try {
   }
   exit 1
 }
+

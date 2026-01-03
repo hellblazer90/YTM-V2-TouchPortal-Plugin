@@ -1,6 +1,6 @@
 {
   "name": "ytmdesktop-touchportal",
-  "version": "1.0.0",
+  "version": "5.0.0",
   "description": "TouchPortal plugin for YouTube Music Desktop (companion server)",
   "main": "src/index.js",
   "type": "commonjs",
@@ -9,3 +9,4 @@
   },
   "dependencies": {}
 }
+

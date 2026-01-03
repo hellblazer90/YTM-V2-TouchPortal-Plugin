@@ -117,7 +117,7 @@ class YtmDesktopApi {
   async requestToken(appInfo = {}) {
     const appId = appInfo.appId || "touchportal";
     const appName = appInfo.appName || "TouchPortal";
-    const appVersion = appInfo.appVersion || "1.0.0";
+    const appVersion = appInfo.appVersion || "5.0.0";
 
     const codeResponse = await this.requestJson("/api/v1/auth/requestcode", {
       method: "POST",
@@ -171,3 +171,4 @@ module.exports = {
   YtmDesktopApi,
   DEFAULTS
 };
+

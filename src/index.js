@@ -1614,7 +1614,7 @@ async function generateCompanionToken() {
   const token = await ytmApi.requestToken({
     appId: "ytm_companion",
     appName: "YTM TouchPortal V2 (by HellBlazer90)",
-    appVersion: "3.0.0"
+    appVersion: "5.0.0"
   });
 
   updateSetting(SETTINGS_LABELS.authToken, token);
@@ -2930,3 +2930,4 @@ try {
 } catch (err) {
   log(`Failed to connect: ${err.message}`);
 }
+
