@@ -1,0 +1,543 @@
+{
+    "sdk":  6,
+    "version":  5,
+    "name":  "YTM Desktop (V2)",
+    "id":  "com.hellblazer90.ytmdesktop.v2",
+    "configuration":  {
+                          "colorDark":  "#8b0000",
+                          "colorLight":  "#ff3b3b"
+                      },
+    "plugin_start_cmd_windows":  "cmd /c \"\"%TP_PLUGIN_FOLDER%com.hellblazer90.ytmdesktop.v2\\start.cmd\"\"",
+    "settings":  [
+                     {
+                         "name":  "Companion Server Port (from YTM Desktop, default 9863)",
+                         "type":  "text",
+                         "default":  "9863"
+                     },
+                     {
+                         "name":  "Companion Server Hostname (Advanced, usually 127.0.0.1)",
+                         "type":  "text",
+                         "default":  "127.0.0.1",
+                         "readOnly":  false
+                     },
+                     {
+                         "name":  "Companion Token (from Generate Token)",
+                         "type":  "text",
+                         "default":  ""
+                     },
+                     {
+                         "name":  "Poll Interval (ms) (Advanced, >=6000)",
+                         "type":  "text",
+                         "default":  "6000"
+                     },
+                     {
+                         "name":  "Elapsed Update Interval (ms) (0=off, local ticker)",
+                         "type":  "text",
+                         "default":  "500"
+                     },
+                     {
+                         "name":  "Send Elapsed/Duration States (True/False, local UI)",
+                         "type":  "text",
+                         "default":  "True"
+                     },
+                     {
+                         "name":  "Minimal State Mode (True/False, fewer states)",
+                         "type":  "text",
+                         "default":  "False"
+                     },
+                     {
+                         "name":  "Extended States Enabled (True/False, volume/like/repeat/cover)",
+                         "type":  "text",
+                         "default":  "True"
+                     },
+                     {
+                         "name":  "Cover Art Mode (Off/Memory/Local, icon source)",
+                         "type":  "text",
+                         "default":  "Memory"
+                     },
+                     {
+                         "name":  "Cover Art Max Width (64/128/256/512, smaller=less lag)",
+                         "type":  "text",
+                         "default":  "512"
+                     },
+                     {
+                         "name":  "Connection Status (Read-Only)",
+                         "type":  "text",
+                         "default":  "Disconnected",
+                         "readOnly":  true
+                     },
+                     {
+                         "name":  "Token Status (Read-Only)",
+                         "type":  "text",
+                         "default":  "Missing",
+                         "readOnly":  true
+                     }
+                 ],
+    "categories":  [
+                       {
+                           "id":  "ytmd.control",
+                           "name":  "YTM Desktop (V2)",
+                           "imagepath":  "%TP_PLUGIN_FOLDER%com.hellblazer90.ytmdesktop.v2/icon.png",
+                           "connectors":  [
+                                              {
+                                                  "id":  "com.hellblazer90.ytmdesktop.v2.connector.volume",
+                                                  "name":  "Volume Slider",
+                                                  "format":  "Set YTM volume"
+                                              }
+                                          ],
+                           "actions":  [
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.playback",
+                                               "name":  "Playback",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Playback {$com.hellblazer90.ytmdesktop.v2.action.playback.choice$}",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.playback.choice",
+                                                                "type":  "choice",
+                                                                "label":  "Choice",
+                                                                "default":  "Toggle",
+                                                                "valueChoices":  [
+                                                                                     "Play",
+                                                                                     "Pause",
+                                                                                     "Toggle"
+                                                                                 ]
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.nextprev",
+                                               "name":  "Next/Previous",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Playback {$com.hellblazer90.ytmdesktop.v2.action.nextprev.direction$} Song",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.nextprev.direction",
+                                                                "type":  "choice",
+                                                                "label":  "Direction",
+                                                                "default":  "Next",
+                                                                "valueChoices":  [
+                                                                                     "Previous",
+                                                                                     "Next"
+                                                                                 ]
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.likedislike",
+                                               "name":  "Like/Dislike",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "{$com.hellblazer90.ytmdesktop.v2.action.likedislike.choice$} This Song",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.likedislike.choice",
+                                                                "type":  "choice",
+                                                                "label":  "Choice",
+                                                                "default":  "Like",
+                                                                "valueChoices":  [
+                                                                                     "Dislike",
+                                                                                     "Like"
+                                                                                 ]
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.volume",
+                                               "name":  "Volume",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Volume {$com.hellblazer90.ytmdesktop.v2.action.volume.direction$} by {$com.hellblazer90.ytmdesktop.v2.action.volume.step$}",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.volume.direction",
+                                                                "type":  "choice",
+                                                                "label":  "Direction",
+                                                                "default":  "Up",
+                                                                "valueChoices":  [
+                                                                                     "Down",
+                                                                                     "Up"
+                                                                                 ]
+                                                            },
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.volume.step",
+                                                                "type":  "number",
+                                                                "label":  "Step",
+                                                                "allowDecimals":  false,
+                                                                "default":  "5"
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.setvolume",
+                                               "name":  "Set Volume",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Set Volume to {$com.hellblazer90.ytmdesktop.v2.action.setvolume.percent$}%",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.setvolume.percent",
+                                                                "type":  "number",
+                                                                "label":  "Percent",
+                                                                "allowDecimals":  false,
+                                                                "default":  "50"
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.mute",
+                                               "name":  "Mute",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Mute {$com.hellblazer90.ytmdesktop.v2.action.mute.choice$}",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.mute.choice",
+                                                                "type":  "choice",
+                                                                "label":  "Choice",
+                                                                "default":  "Toggle",
+                                                                "valueChoices":  [
+                                                                                     "Mute",
+                                                                                     "Unmute",
+                                                                                     "Toggle"
+                                                                                 ]
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.seek",
+                                               "name":  "Seek",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Seek {$com.hellblazer90.ytmdesktop.v2.action.seek.direction$} by {$com.hellblazer90.ytmdesktop.v2.action.seek.seconds$} Seconds",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.seek.direction",
+                                                                "type":  "choice",
+                                                                "label":  "Direction",
+                                                                "default":  "Forward",
+                                                                "valueChoices":  [
+                                                                                     "Rewind",
+                                                                                     "Forward"
+                                                                                 ]
+                                                            },
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.seek.seconds",
+                                                                "type":  "number",
+                                                                "label":  "Seconds",
+                                                                "allowDecimals":  false,
+                                                                "default":  "10"
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.seekto",
+                                               "name":  "Seek To",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Seek To {$com.hellblazer90.ytmdesktop.v2.action.seekto.seconds$} Seconds",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.seekto.seconds",
+                                                                "type":  "number",
+                                                                "label":  "Seconds",
+                                                                "allowDecimals":  false,
+                                                                "default":  "0"
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.repeat",
+                                               "name":  "Repeat",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Repeat {$com.hellblazer90.ytmdesktop.v2.action.repeat.mode$}",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.repeat.mode",
+                                                                "type":  "choice",
+                                                                "label":  "Mode",
+                                                                "default":  "OFF",
+                                                                "valueChoices":  [
+                                                                                     "Toggle",
+                                                                                     "OFF",
+                                                                                     "ALL",
+                                                                                     "ONE"
+                                                                                 ]
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.queueindex",
+                                               "name":  "Play Queue Index",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "Play Queue Index {$com.hellblazer90.ytmdesktop.v2.action.queueindex.index$}",
+                                               "data":  [
+                                                            {
+                                                                "id":  "com.hellblazer90.ytmdesktop.v2.action.queueindex.index",
+                                                                "type":  "number",
+                                                                "label":  "Index",
+                                                                "allowDecimals":  false,
+                                                                "default":  "0"
+                                                            }
+                                                        ]
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.shuffle",
+                                               "name":  "Shuffle",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "tryInline":  true,
+                                               "format":  "YouTube Music Desktop (V2): Toggle Shuffle"
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.token",
+                                               "name":  "Generate Token",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "format":  "Generate Companion Token"
+                                           },
+                                           {
+                                               "id":  "com.hellblazer90.ytmdesktop.v2.action.refresh",
+                                               "name":  "Refresh States",
+                                               "prefix":  "YouTube Music Desktop (V2)",
+                                               "type":  "communicate",
+                                               "format":  "Refresh States"
+                                           }
+                                       ],
+                           "states":  [
+                                          {
+                                              "id":  "ytmd.title",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Song Title",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.artist",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Song Artist",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.album",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Song Album",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.coverUrl",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Cover Art URL",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.coverUrlSmall",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Cover Art URL (small, direct)",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.coverPath",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Cover Art Path",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.coverFileUrl",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Cover Art File URL",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.coverDebug",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Cover Art Debug",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.coverBase64",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Cover Art Base64 (raw)",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.coverBase64SendCount",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Cover Art Base64 Send Count",
+                                              "default":  "0"
+                                          },
+                                          {
+                                              "id":  "ytmd.hasSong",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Has Song",
+                                              "default":  "False"
+                                          },
+                                          {
+                                              "id":  "ytmd.isPaused",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Is Paused",
+                                              "default":  "True"
+                                          },
+                                          {
+                                              "id":  "ytmd.isPlaying",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Is Playing",
+                                              "default":  "False"
+                                          },
+                                          {
+                                              "id":  "ytmd.trackState",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Track State",
+                                              "default":  "UNKNOWN"
+                                          },
+                                          {
+                                              "id":  "ytmd.durationSec",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Song Duration (sec)",
+                                              "default":  "0"
+                                          },
+                                          {
+                                              "id":  "ytmd.durationText",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Song Duration (mm:ss)",
+                                              "default":  "00:00"
+                                          },
+                                          {
+                                              "id":  "ytmd.elapsedSec",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Elapsed (sec)",
+                                              "default":  "0"
+                                          },
+                                          {
+                                              "id":  "ytmd.elapsedText",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Elapsed (mm:ss)",
+                                              "default":  "00:00"
+                                          },
+                                          {
+                                              "id":  "ytmd.volumePercent",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Volume Percent",
+                                              "default":  "0"
+                                          },
+                                          {
+                                              "id":  "ytmd.isMuted",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Is Muted",
+                                              "default":  "False"
+                                          },
+                                          {
+                                              "id":  "ytmd.adPlaying",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Ad Playing",
+                                              "default":  "False"
+                                          },
+                                          {
+                                              "id":  "ytmd.isLive",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Is Live",
+                                              "default":  "False"
+                                          },
+                                          {
+                                              "id":  "ytmd.likeState",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Like State",
+                                              "default":  "INDIFFERENT"
+                                          },
+                                          {
+                                              "id":  "ytmd.repeatMode",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Repeat Mode",
+                                              "default":  "NONE"
+                                          },
+                                          {
+                                              "id":  "ytmd.url",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Song URL",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.videoId",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Video ID",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.playlistId",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Playlist ID",
+                                              "default":  ""
+                                          },
+                                          {
+                                              "id":  "ytmd.mediaType",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Media Type",
+                                              "default":  "UNKNOWN"
+                                          },
+                                          {
+                                              "id":  "ytmd.connectionStatus",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Connection Status",
+                                              "default":  "Disconnected"
+                                          }
+                                      ],
+                           "events":  [
+                                          {
+                                              "id":  "ytmd.event.isPaused",
+                                              "name":  "Playback Is Paused",
+                                              "format":  "Playback paused is $val",
+                                              "type":  "communicate",
+                                              "valueType":  "choice",
+                                              "valueChoices":  [
+                                                                   "True",
+                                                                   "False"
+                                                               ],
+                                              "valueStateId":  "ytmd.isPaused"
+                                          },
+                                          {
+                                              "id":  "ytmd.event.likeState",
+                                              "name":  "Like State",
+                                              "format":  "Like state is $val",
+                                              "type":  "communicate",
+                                              "valueType":  "choice",
+                                              "valueChoices":  [
+                                                                   "INDIFFERENT",
+                                                                   "LIKE",
+                                                                   "DISLIKE",
+                                                                   "UNKNOWN"
+                                                               ],
+                                              "valueStateId":  "ytmd.likeState"
+                                          },
+                                          {
+                                              "id":  "ytmd.event.repeatMode",
+                                              "name":  "Repeat Mode",
+                                              "format":  "Repeat mode is $val",
+                                              "type":  "communicate",
+                                              "valueType":  "choice",
+                                              "valueChoices":  [
+                                                                   "NONE",
+                                                                   "ALL",
+                                                                   "ONE",
+                                                                   "UNKNOWN"
+                                                               ],
+                                              "valueStateId":  "ytmd.repeatMode"
+                                          }
+                                      ]
+                       }
+                   ]
+}
+
+
