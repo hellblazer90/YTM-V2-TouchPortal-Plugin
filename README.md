@@ -2,7 +2,10 @@
 
 This plugin connects TouchPortal to YouTube Music Desktop (ytmdesktop) using the Companion Server API.
 
-Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used the old `com.abuelo.ytmdesktop.v2` build, TouchPortal treats this as a new plugin. You will need to re-import the plugin and re-bind actions/states on your buttons.
+> [!WARNING]
+> **Personal project notice:** I made this entirely with an LLM for personal use in a day. I do not plan to update it. If you want to continue support, feel free. Thank you in advance.
+
+Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an older build with a different plugin ID, TouchPortal treats this as a new plugin. You will need to re-import the plugin and re-bind actions/states on your buttons.
 
 ## Index
 
@@ -43,19 +46,30 @@ Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used th
 2. Enable Companion Server and Companion Authorization.
 3. Download `YTMDesktopTP.tpp` from the latest GitHub Release.
    - YouTube Music Desktop App: https://github.com/ytmdesktop/ytmdesktop
-4. Import it in TouchPortal:
+4. Import it into TouchPortal:
    - Settings -> Plug-ins -> Import -> select `YTMDesktopTP.tpp`.
 5. Restart TouchPortal.
 6. Generate a Companion token (see below).
 
-## Generate a Token (TouchPortal)
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/1.jpg)
+
+
+## Generate a Token (TouchPortal) (Recommended)
 
 1. Add the action `Generate Token`.
 2. Press it once.
 3. Approve the authorization prompt in YouTube Music Desktop.
 4. The plugin saves the token to `ytmd_companion_token.txt` and fills the setting automatically.
 
-## Generate a Token (PowerShell)
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/2.jpg)
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/3.jpg)
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/4.jpg)
+
+
+## Generate a Token (PowerShell) (Option 2)
 
 ```powershell
 Set-Location "C:\path\to\YTMDesktopTP"
@@ -63,7 +77,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Get-CompanionToken.ps1
 Get-Content .\ytmd_companion_token.txt
 ```
 
-## Generate a Token (CMD)
+## Generate a Token (CMD) (Option 3)
 
 If PowerShell policy blocks the script, use the CMD helper:
 
@@ -101,6 +115,11 @@ If the Companion Token setting is empty, the plugin reads `ytmd_companion_token.
 Note: The Companion Server `/state` endpoint is rate-limited (1 request per 5 seconds). Keep Poll Interval >= 6000 ms to avoid 429 errors.
 Commands are rate-limited (about 2 per second). The plugin queues commands to reduce 429 errors from rapid taps.
 
+
+After that, you can start creating actions.
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/5.jpg)
+
 ## Cover Art Options
 
 - `Cover Art Base64 (raw)` is the most reliable way to show artwork on buttons.
@@ -111,22 +130,9 @@ Commands are rate-limited (about 2 per second). The plugin queues commands to re
   - `Local`: download to a local file and also send base64.
 
 Suggested button setup:
-- On Event: `Cover Art Base64 (raw)` changes to
-- Action: Change Icon with value from `Cover Art Base64 (raw)`
 
-## Cover Art Setup (TouchPortal 4.4 Build 6)
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/6.jpg)
 
-TouchPortal 4.4 Build 6 button icon actions do not accept URLs. Use a local file path or base64.
-
-Recommended setup:
-1. On Event: When `Cover Art URL` changes to
-2. Action: Change Icon with value from `Cover Art Path` (local file)
-
-If you prefer base64:
-1. On Event: When `Cover Art Base64 (raw)` changes to
-2. Action: Change Icon with value from `Cover Art Base64 (raw)` (enable base64 option if the action provides one)
-
-If icons lag, reduce `Cover Art Max Width` or set `Cover Art Max Base64 Length`.
 
 ## Performance Notes (E3081)
 
