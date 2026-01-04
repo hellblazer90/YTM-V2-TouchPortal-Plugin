@@ -5,6 +5,9 @@ This plugin connects TouchPortal to YouTube Music Desktop (ytmdesktop) using the
 > [!WARNING]
 > **Personal project notice:** I made this entirely with an LLM for personal use in a day. I do not plan to update it. If you want to continue support, feel free. Thank you in advance.
 
+> [!NOTE]
+> Some instructions may be written directly by an LLM.
+
 Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an older build with a different plugin ID, TouchPortal treats this as a new plugin. You will need to re-import the plugin and re-bind actions/states on your buttons.
 
 ## Index
