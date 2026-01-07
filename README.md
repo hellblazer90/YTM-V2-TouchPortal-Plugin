@@ -8,9 +8,10 @@ This plugin connects TouchPortal to YouTube Music Desktop (ytmdesktop) using the
 > [!NOTE]
 > Some instructions may be written directly by an LLM.
 
-## New in v5.0.1
+## New in v5.0.2
 
 - Added a `Startup Status` state to show startup progress and highlight missing Node.js or restart needs.
+- Troubleshooting now calls out the Node.js install + TouchPortal restart fix for "Disconnected".
 
 Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an older build with a different plugin ID, TouchPortal treats this as a new plugin. You will need to re-import the plugin and re-bind actions/states on your buttons.
 
@@ -239,6 +240,7 @@ Move-Item -Force $zipPath $tppPath
 
 ## Troubleshooting
 
+- Shows "Disconnected" and nothing works: install Node.js 18+ and restart TouchPortal so the plugin can see `node` in PATH.
 - Error 429 on Connection Status: set Poll Interval >= 6000 ms, and make sure only one Companion client is using the token. Remove old plugin versions and generate a new token if needed.
 - Action failed (HTTP 429): commands are rate-limited (about 2 per second). Avoid rapid taps and macros that send repeated commands.
 - Token generation fails (HTTP 400): verify Companion Authorization is enabled in YouTube Music Desktop.
