@@ -118,7 +118,8 @@ const STATES = {
   playlistId: "ytmd.playlistId",
   mediaType: "ytmd.mediaType",
   isLive: "ytmd.isLive",
-  connectionStatus: "ytmd.connectionStatus"
+  connectionStatus: "ytmd.connectionStatus",
+  startupStatus: "ytmd.startupStatus"
 };
 
 const EVENTS = {
@@ -150,6 +151,7 @@ let reconnectTimer = null;
 let pollInFlight = false;
 let connecting = false;
 let connectionStatus = "";
+let startupStatus = "";
 let isConnected = false;
 const lastSettingValues = new Map();
 let lastSettingsSignature = "";
@@ -1750,6 +1752,20 @@ function updateEvent(eventId, value) {
   triggerEvent(eventId, textValue);
 }
 
+function setStartupStatus(status) {
+  const textValue = status || "";
+  if (textValue === startupStatus) {
+    return false;
+  }
+
+  startupStatus = textValue;
+  updateState(STATES.startupStatus, textValue);
+  if (lastStateSnapshot) {
+    lastStateSnapshot[STATES.startupStatus] = textValue;
+  }
+  return true;
+}
+
 function setConnectionStatus(status) {
   const textValue = status || "";
   if (textValue === connectionStatus) {
@@ -1764,6 +1780,13 @@ function setConnectionStatus(status) {
   }
   updateState(STATES.connectionStatus, textValue);
   updateSetting(SETTINGS_STATUS_LABEL, textValue);
+  if (textValue === "Connected") {
+    setStartupStatus("Ready");
+  } else if (/token missing/i.test(textValue)) {
+    setStartupStatus("Companion token missing.");
+  } else if (textValue && textValue !== "Disconnected") {
+    setStartupStatus(textValue);
+  }
   return true;
 }
 
@@ -1826,6 +1849,9 @@ function handleConnectionFailure(err) {
   }
   const status = formatConnectionStatus(err);
   const changed = setConnectionStatus(status);
+  if (status === "Disconnected") {
+    setStartupStatus("Waiting for API");
+  }
 
   if (changed) {
     log(`Connection status: ${status}`);
@@ -2206,6 +2232,7 @@ function resendCachedStates() {
   }
 
   updateState(STATES.connectionStatus, connectionStatus);
+  updateState(STATES.startupStatus, startupStatus);
 }
 
 function tickElapsed() {
@@ -2838,6 +2865,7 @@ tpClient.on("connected", () => {
   lastStateValues.clear();
   lastConnectorVolumeSent = null;
   setConnectionStatus("Disconnected");
+  setStartupStatus("TouchPortal connected; checking API");
   forceStatusSettingsSync();
   startStateReplay();
   startElapsedTicker();
@@ -2919,6 +2947,7 @@ tpClient.on("close", (data) => {
   lastConnectorVolumeSent = null;
   stopStateReplay();
   stopElapsedTicker();
+  setStartupStatus("TouchPortal disconnected");
 });
 
 tpClient.on("error", (err) => {

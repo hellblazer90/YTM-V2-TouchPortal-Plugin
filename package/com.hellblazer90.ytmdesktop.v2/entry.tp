@@ -1,6 +1,6 @@
 {
     "sdk":  6,
-    "version":  5,
+    "version":  "5.0.1",
     "name":  "YTM Desktop (V2)",
     "id":  "com.hellblazer90.ytmdesktop.v2",
     "configuration":  {
@@ -492,6 +492,12 @@
                                               "type":  "text",
                                               "desc":  "YTM Desktop V2 - Connection Status",
                                               "default":  "Disconnected"
+                                          },
+                                          {
+                                              "id":  "ytmd.startupStatus",
+                                              "type":  "text",
+                                              "desc":  "YTM Desktop V2 - Startup Status",
+                                              "default":  "Plugin not running (Node.js 18+; restart TouchPortal)"
                                           }
                                       ],
                            "events":  [

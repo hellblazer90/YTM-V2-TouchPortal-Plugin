@@ -8,6 +8,10 @@ This plugin connects TouchPortal to YouTube Music Desktop (ytmdesktop) using the
 > [!NOTE]
 > Some instructions may be written directly by an LLM.
 
+## New in v5.0.1
+
+- Added a `Startup Status` state to show startup progress and highlight missing Node.js or restart needs.
+
 Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an older build with a different plugin ID, TouchPortal treats this as a new plugin. You will need to re-import the plugin and re-bind actions/states on your buttons.
 
 ## Index
@@ -42,6 +46,7 @@ Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an
 - TouchPortal 3.0+
 - YouTube Music Desktop with Companion Server enabled
 - Node.js 18+ (bundled fetch is used)
+- If you install Node.js while TouchPortal is running, restart TouchPortal so the plugin can see it in PATH.
 
 ## Installation (User)
 
@@ -146,6 +151,18 @@ If TouchPortal reports a performance warning:
 - Use `Minimal State Mode` for the smallest possible updates.
 - Use `Extended States Enabled` only if you need volume/mute/like/repeat/ID states.
 
+## Startup Status
+
+The state `ytmd.startupStatus` shows startup progress and quick guidance, such as:
+
+- `Plugin not running (Node.js 18+; restart TouchPortal)` when the plugin cannot start.
+- `TouchPortal connected; checking API` during initial connection.
+- `Ready` once the plugin is connected and running.
+- `Waiting for API` if the Companion API is unreachable.
+- `Companion token missing.` when a token is required.
+
+Place the state on a button or use a Dynamic Text Updater to surface this hint.
+
 ## Actions
 
 - Playback (Play / Pause / Toggle)
@@ -178,6 +195,8 @@ Core states:
 - Song Title, Artist, Album
 - Has Song
 - Track State
+- Connection Status
+- Startup Status
 - Is Paused / Is Playing
 
 Extended states (when enabled):
