@@ -1,6 +1,6 @@
 {
     "sdk":  6,
-    "version":  "5.0.2",
+    "version":  6,
     "name":  "YTM Desktop (V2)",
     "id":  "com.hellblazer90.ytmdesktop.v2",
     "configuration":  {
@@ -47,6 +47,11 @@
                      },
                      {
                          "name":  "Extended States Enabled (True/False, volume/like/repeat/cover)",
+                         "type":  "text",
+                         "default":  "True"
+                     },
+                     {
+                         "name":  "Debug Log Enabled (True/False, writes ytmd_plugin.log)",
                          "type":  "text",
                          "default":  "True"
                      },

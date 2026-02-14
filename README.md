@@ -8,7 +8,7 @@ This plugin connects TouchPortal to YouTube Music Desktop (ytmdesktop) using the
 > [!NOTE]
 > Some instructions may be written directly by an LLM.
 
-## New in v5.0.2
+## New in v6.0.0
 
 - Added a `Startup Status` state to show startup progress and highlight missing Node.js or restart needs.
 - Troubleshooting now calls out the Node.js install + TouchPortal restart fix for "Disconnected".
@@ -115,6 +115,7 @@ You can paste the token manually into TouchPortal settings if needed.
 - Send Elapsed/Duration States (True/False, local UI): `True`
 - Minimal State Mode (True/False, fewer states): `False`
 - Extended States Enabled (True/False, volume/like/repeat/cover): `True`
+- Debug Log Enabled (True/False, writes ytmd_plugin.log): `True`
 - Cover Art Mode (Off/Memory/Local, icon source): `Memory`
 - Cover Art Max Width (64/128/256/512, smaller=less lag): `512`
 - Connection Status (Read-Only): read-only
@@ -249,6 +250,7 @@ Move-Item -Force $zipPath $tppPath
 - Cover art missing: in TouchPortal 4.4 Build 6, button icons do not accept URLs. Use `Cover Art Path` or `Cover Art Base64 (raw)`. Check `Cover Art Debug` for errors and reduce cover size if laggy.
 - E3081 performance warning: increase Poll Interval, disable cover art or extended states, enable Minimal State Mode, and confirm only one plugin instance is running.
 - Not updating: check Connection Status in TouchPortal settings.
+- Need diagnostics: enable `Debug Log Enabled` and inspect `%APPDATA%\\TouchPortal\\plugins\\com.hellblazer90.ytmdesktop.v2\\ytmd_plugin.log` (rotates into `ytmd_plugin.prev.log`).
 
 ## Uninstall
 

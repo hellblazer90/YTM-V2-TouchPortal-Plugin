@@ -29,6 +29,10 @@ const COVER_ART_DEFAULT_MAX_WIDTH = 512;
 const COVER_ART_ALLOWED_WIDTHS = [64, 128, 256, 512];
 const COVER_ART_BASE64_MIN_INTERVAL_MS = 1500;
 const COVER_ART_DEFAULT_MAX_BASE64_LENGTH = 0;
+const DEBUG_LOG_FILENAME = "ytmd_plugin.log";
+const DEBUG_LOG_PREVIOUS_FILENAME = "ytmd_plugin.prev.log";
+const DEBUG_LOG_MAX_BYTES = 2 * 1024 * 1024;
+const DEBUG_LOG_VALUE_MAX_LEN = 180;
 
 const SETTINGS = {
   hostname: "ytmd.hostname",
@@ -42,7 +46,8 @@ const SETTINGS = {
   stateReplayMs: "ytmd.stateReplayMs",
   elapsedDurationEnabled: "ytmd.elapsedDurationEnabled",
   minimalStateMode: "ytmd.minimalStateMode",
-  extendedStatesEnabled: "ytmd.extendedStatesEnabled"
+  extendedStatesEnabled: "ytmd.extendedStatesEnabled",
+  debugLogEnabled: "ytmd.debugLogEnabled"
 };
 
 const SETTINGS_LABELS = {
@@ -57,7 +62,8 @@ const SETTINGS_LABELS = {
   stateReplayMs: "State Replay Interval (ms) (0=off)",
   elapsedDurationEnabled: "Send Elapsed/Duration States (True/False, local UI)",
   minimalStateMode: "Minimal State Mode (True/False, fewer states)",
-  extendedStatesEnabled: "Extended States Enabled (True/False, volume/like/repeat/cover)"
+  extendedStatesEnabled: "Extended States Enabled (True/False, volume/like/repeat/cover)",
+  debugLogEnabled: "Debug Log Enabled (True/False, writes ytmd_plugin.log)"
 };
 const LEGACY_SETTINGS_LABELS = {
   hostname: ["Companion Server Hostname (Advanced)"],
@@ -70,7 +76,8 @@ const LEGACY_SETTINGS_LABELS = {
   elapsedTickMs: ["Elapsed Update Interval (ms) (0=off)"],
   elapsedDurationEnabled: ["Send Elapsed/Duration States (True/False)"],
   minimalStateMode: ["Minimal State Mode (True/False)"],
-  extendedStatesEnabled: ["Extended States Enabled (True/False)"]
+  extendedStatesEnabled: ["Extended States Enabled (True/False)"],
+  debugLogEnabled: ["Debug Log Enabled (True/False)"]
 };
 const LEGACY_COVER_SETTING_LABELS = [
   "Download Cover Art (Local File/Base64) (True/False)",
@@ -140,7 +147,8 @@ const defaults = {
   stateReplayMs: DEFAULT_STATE_REPLAY_MS,
   elapsedDurationEnabled: true,
   minimalStateMode: false,
-  extendedStatesEnabled: true
+  extendedStatesEnabled: true,
+  debugLogEnabled: true
 };
 
 const ytmApi = new YtmDesktopApi(defaults);
@@ -184,6 +192,7 @@ let stateReplayMs = defaults.stateReplayMs;
 let elapsedDurationEnabled = defaults.elapsedDurationEnabled;
 let minimalStateMode = defaults.minimalStateMode;
 let extendedStatesEnabled = defaults.extendedStatesEnabled;
+let debugLogEnabled = defaults.debugLogEnabled;
 let lastElapsedBaseSec = null;
 let lastElapsedAt = 0;
 let pendingVolume = null;
@@ -207,6 +216,7 @@ let lastCoverBase64SentAt = 0;
 let pendingCoverBase64 = "";
 let pendingCoverBase64Timer = null;
 let coverBase64SendCount = 0;
+let debugLogWriteFailed = false;
 
 const tpClient = new TouchPortalClient({
   pluginId: PLUGIN_ID,
@@ -214,7 +224,57 @@ const tpClient = new TouchPortalClient({
 });
 
 function log(message) {
-  console.log(`[${LOG_PREFIX}] ${message}`);
+  const text = message === null || message === undefined ? "" : String(message);
+  console.log(`[${LOG_PREFIX}] ${text}`);
+  writeLogLineToFile(text);
+}
+
+function writeLogLineToFile(text) {
+  if (!debugLogEnabled || debugLogWriteFailed) {
+    return;
+  }
+  const line = `${new Date().toISOString()} [${LOG_PREFIX}] ${text}`;
+  const logPath = getDebugLogPath();
+  const previousPath = getPreviousDebugLogPath();
+  try {
+    if (fs.existsSync(logPath)) {
+      const stat = fs.statSync(logPath);
+      if (stat.size >= DEBUG_LOG_MAX_BYTES) {
+        if (fs.existsSync(previousPath)) {
+          fs.unlinkSync(previousPath);
+        }
+        fs.renameSync(logPath, previousPath);
+      }
+    }
+    fs.appendFileSync(logPath, `${line}\n`, "utf8");
+  } catch (err) {
+    debugLogWriteFailed = true;
+    console.error(`[${LOG_PREFIX}] Failed to write debug log: ${err.message}`);
+  }
+}
+
+function debugLog(message) {
+  if (!debugLogEnabled) {
+    return;
+  }
+  const text = message === null || message === undefined ? "" : String(message);
+  writeLogLineToFile(`[DEBUG] ${text}`);
+}
+
+function getDebugLogPath() {
+  return path.join(__dirname, "..", DEBUG_LOG_FILENAME);
+}
+
+function getPreviousDebugLogPath() {
+  return path.join(__dirname, "..", DEBUG_LOG_PREVIOUS_FILENAME);
+}
+
+function shortenForLog(value, maxLen = DEBUG_LOG_VALUE_MAX_LEN) {
+  const raw = value === null || value === undefined ? "" : String(value);
+  if (raw.length <= maxLen) {
+    return raw;
+  }
+  return `${raw.slice(0, maxLen)}...`;
 }
 
 let instanceLockPath = "";
@@ -293,6 +353,9 @@ function releaseInstanceLock() {
 if (!acquireInstanceLock()) {
   process.exit(0);
 }
+
+log(`Plugin process started (pid ${process.pid}).`);
+log(`Debug log ${debugLogEnabled ? "enabled" : "disabled"} (${getDebugLogPath()})`);
 
 process.on("exit", releaseInstanceLock);
 process.on("SIGINT", () => {
@@ -958,6 +1021,21 @@ function extractActionData(payload) {
   return {};
 }
 
+function summarizeActionData(values) {
+  if (!values || typeof values !== "object") {
+    return "";
+  }
+  const keys = Object.keys(values).sort();
+  if (keys.length === 0) {
+    return "";
+  }
+
+  return keys
+    .slice(0, 8)
+    .map((key) => `${key}=${shortenForLog(values[key])}`)
+    .join(", ");
+}
+
 function getActionValue(values, idKey, nameKey) {
   if (!values || typeof values !== "object") {
     return undefined;
@@ -1305,6 +1383,12 @@ function applySettings(settings) {
     SETTINGS_LABELS.extendedStatesEnabled,
     LEGACY_SETTINGS_LABELS.extendedStatesEnabled
   );
+  const debugLogRaw = getSettingWithLegacy(
+    settings,
+    SETTINGS.debugLogEnabled,
+    SETTINGS_LABELS.debugLogEnabled,
+    LEGACY_SETTINGS_LABELS.debugLogEnabled
+  );
 
   const hostnameValue = typeof hostnameRaw === "string" ? hostnameRaw.trim() : "";
   let tokenValue = typeof tokenRaw === "string" ? tokenRaw.trim() : "";
@@ -1433,6 +1517,15 @@ function applySettings(settings) {
       lastConnectorVolumeSent = null;
       clearExtendedStates();
     }
+  }
+
+  const nextDebugLogEnabled = parseBooleanSetting(debugLogRaw, debugLogEnabled);
+  if (nextDebugLogEnabled !== debugLogEnabled) {
+    debugLogEnabled = nextDebugLogEnabled;
+    debugLogWriteFailed = false;
+    log(
+      `Debug log ${debugLogEnabled ? "enabled" : "disabled"} (${getDebugLogPath()})`
+    );
   }
 
   const nextConfig = {
@@ -1578,6 +1671,7 @@ function startTokenWatch() {
     return;
   }
 
+  log("Token watch started.");
   tokenWatchTimer = setInterval(() => {
     const token = readTokenFromFile();
     if (!token || token === currentConfig.authToken) {
@@ -1595,6 +1689,7 @@ function stopTokenWatch() {
   if (tokenWatchTimer) {
     clearInterval(tokenWatchTimer);
     tokenWatchTimer = null;
+    log("Token watch stopped.");
   }
 }
 
@@ -1613,10 +1708,11 @@ function saveTokenToFile(token) {
 }
 
 async function generateCompanionToken() {
+  log("Generating companion token...");
   const token = await ytmApi.requestToken({
     appId: "ytm_companion",
     appName: "YTM TouchPortal V2 (by HellBlazer90)",
-    appVersion: "5.0.0"
+    appVersion: "6.0.0"
   });
 
   updateSetting(SETTINGS_LABELS.authToken, token);
@@ -1626,6 +1722,7 @@ async function generateCompanionToken() {
   });
   saveTokenToFile(token);
   stopTokenWatch();
+  log("Companion token generated successfully.");
 }
 
 function buildConnectorId(connectorId) {
@@ -1767,6 +1864,7 @@ function setStartupStatus(status) {
 }
 
 function setConnectionStatus(status) {
+  const previous = connectionStatus || "Unknown";
   const textValue = status || "";
   if (textValue === connectionStatus) {
     return false;
@@ -1787,6 +1885,7 @@ function setConnectionStatus(status) {
   } else if (textValue && textValue !== "Disconnected") {
     setStartupStatus(textValue);
   }
+  log(`Connection status changed: ${previous} -> ${textValue || "Unknown"}`);
   return true;
 }
 
@@ -1889,8 +1988,14 @@ function sendCommandLimited(command, data) {
     lastCommandAt = Date.now();
 
     try {
-      return await ytmApi.sendCommand(command, data);
+      const payloadText = data === undefined ? "" : ` data=${shortenForLog(JSON.stringify(data))}`;
+      debugLog(`Command -> ${command}${payloadText}`);
+      const result = await ytmApi.sendCommand(command, data);
+      debugLog(`Command <- ${command} ok`);
+      return result;
     } catch (err) {
+      const status = err && err.status ? ` status=${err.status}` : "";
+      debugLog(`Command <- ${command} failed${status}: ${err.message}`);
       handleCommandRateLimit(err);
       throw err;
     }
@@ -2488,12 +2593,14 @@ function startPolling() {
   pollTimer = setInterval(() => {
     pollState();
   }, interval);
+  log(`Polling started (${interval}ms).`);
 }
 
 function stopPolling() {
   if (pollTimer) {
     clearInterval(pollTimer);
     pollTimer = null;
+    log("Polling stopped.");
   }
 }
 
@@ -2505,12 +2612,14 @@ function startReconnectLoop() {
   reconnectTimer = setInterval(() => {
     checkConnection();
   }, RECONNECT_INTERVAL_MS);
+  log(`Reconnect loop started (${RECONNECT_INTERVAL_MS}ms).`);
 }
 
 function stopReconnectLoop() {
   if (reconnectTimer) {
     clearInterval(reconnectTimer);
     reconnectTimer = null;
+    log("Reconnect loop stopped.");
   }
 }
 
@@ -2530,6 +2639,7 @@ async function checkConnection() {
   }
 
   connecting = true;
+  debugLog(`Checking API connection (${ytmApi.baseUrl})...`);
 
   try {
     const state = await ytmApi.getState();
@@ -2611,9 +2721,14 @@ function handleRateLimit(err) {
 async function handleAction(data) {
   const actionId = data.actionId || data.id;
   const actionData = extractActionData(data);
+  const actionSummary = summarizeActionData(actionData);
+  debugLog(
+    `Action received: ${actionId || "unknown"}${actionSummary ? ` (${actionSummary})` : ""}`
+  );
   const signature = buildActionSignature(actionId, actionData);
 
   if (shouldDebounce(signature, ACTION_DUPLICATE_WINDOW_MS)) {
+    debugLog(`Action ignored by debounce: ${actionId || "unknown"}`);
     return;
   }
 
@@ -2732,6 +2847,7 @@ async function handleAction(data) {
     }
     case "com.hellblazer90.ytmdesktop.v2.action.shuffle":
       if (shouldDebounce(`${actionId}:toggle`, TOGGLE_DEBOUNCE_MS)) {
+        debugLog(`Action ignored by toggle debounce: ${actionId}`);
         return;
       }
       await sendCommandLimited("shuffle");
@@ -2839,6 +2955,7 @@ async function handleAction(data) {
       return;
     }
     default:
+      debugLog(`Unknown action ignored: ${actionId || "unknown"}`);
       return;
   }
 }
@@ -2862,6 +2979,7 @@ function handleSettingsPayload(data) {
 
 tpClient.on("connected", () => {
   log("Connected to TouchPortal");
+  log(`Debug log file: ${getDebugLogPath()}`);
   lastStateValues.clear();
   lastConnectorVolumeSent = null;
   setConnectionStatus("Disconnected");
@@ -2935,6 +3053,7 @@ tpClient.on("connectorChange", (data) => {
   }
 
   const safePercent = clampNumber(Math.round(percent), 0, 100);
+  debugLog(`Connector volume change -> ${safePercent}`);
   scheduleVolumeSend(safePercent);
 });
 

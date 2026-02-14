@@ -8,6 +8,11 @@ This plugin connects TouchPortal to YouTube Music Desktop (ytmdesktop) using the
 > [!NOTE]
 > Some instructions may be written directly by an LLM.
 
+## New in v6.0.0
+
+- Added a `Startup Status` state to show startup progress and highlight missing Node.js or restart needs.
+- Troubleshooting now calls out the Node.js install + TouchPortal restart fix for "Disconnected".
+
 Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an older build with a different plugin ID, TouchPortal treats this as a new plugin. You will need to re-import the plugin and re-bind actions/states on your buttons.
 
 ## Index
@@ -42,6 +47,7 @@ Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an
 - TouchPortal 3.0+
 - YouTube Music Desktop with Companion Server enabled
 - Node.js 18+ (bundled fetch is used)
+- If you install Node.js while TouchPortal is running, restart TouchPortal so the plugin can see it in PATH.
 
 ## Installation (User)
 
@@ -49,19 +55,30 @@ Important: The plugin ID is now `com.hellblazer90.ytmdesktop.v2`. If you used an
 2. Enable Companion Server and Companion Authorization.
 3. Download `YTMDesktopTP.tpp` from the latest GitHub Release.
    - YouTube Music Desktop App: https://github.com/ytmdesktop/ytmdesktop
-4. Import it in TouchPortal:
+4. Import it into TouchPortal:
    - Settings -> Plug-ins -> Import -> select `YTMDesktopTP.tpp`.
 5. Restart TouchPortal.
 6. Generate a Companion token (see below).
 
-## Generate a Token (TouchPortal)
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/1.jpg)
+
+
+## Generate a Token (TouchPortal) (Recommended)
 
 1. Add the action `Generate Token`.
 2. Press it once.
 3. Approve the authorization prompt in YouTube Music Desktop.
 4. The plugin saves the token to `ytmd_companion_token.txt` and fills the setting automatically.
 
-## Generate a Token (PowerShell)
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/2.jpg)
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/3.jpg)
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/4.jpg)
+
+
+## Generate a Token (PowerShell) (Option 2)
 
 ```powershell
 Set-Location "C:\path\to\YTMDesktopTP"
@@ -69,7 +86,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Get-CompanionToken.ps1
 Get-Content .\ytmd_companion_token.txt
 ```
 
-## Generate a Token (CMD)
+## Generate a Token (CMD) (Option 3)
 
 If PowerShell policy blocks the script, use the CMD helper:
 
@@ -98,6 +115,7 @@ You can paste the token manually into TouchPortal settings if needed.
 - Send Elapsed/Duration States (True/False, local UI): `True`
 - Minimal State Mode (True/False, fewer states): `False`
 - Extended States Enabled (True/False, volume/like/repeat/cover): `True`
+- Debug Log Enabled (True/False, writes ytmd_plugin.log): `True`
 - Cover Art Mode (Off/Memory/Local, icon source): `Memory`
 - Cover Art Max Width (64/128/256/512, smaller=less lag): `512`
 - Connection Status (Read-Only): read-only
@@ -106,6 +124,11 @@ You can paste the token manually into TouchPortal settings if needed.
 If the Companion Token setting is empty, the plugin reads `ytmd_companion_token.txt` automatically.
 Note: The Companion Server `/state` endpoint is rate-limited (1 request per 5 seconds). Keep Poll Interval >= 6000 ms to avoid 429 errors.
 Commands are rate-limited (about 2 per second). The plugin queues commands to reduce 429 errors from rapid taps.
+
+
+After that, you can start creating actions.
+
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/5.jpg)
 
 ## Cover Art Options
 
@@ -117,22 +140,9 @@ Commands are rate-limited (about 2 per second). The plugin queues commands to re
   - `Local`: download to a local file and also send base64.
 
 Suggested button setup:
-- On Event: `Cover Art Base64 (raw)` changes to
-- Action: Change Icon with value from `Cover Art Base64 (raw)`
 
-## Cover Art Setup (TouchPortal 4.4 Build 6)
+![YTM DESKTOP GENERATE TOKEN](TUTORIAL/6.jpg)
 
-TouchPortal 4.4 Build 6 button icon actions do not accept URLs. Use a local file path or base64.
-
-Recommended setup:
-1. On Event: When `Cover Art URL` changes to
-2. Action: Change Icon with value from `Cover Art Path` (local file)
-
-If you prefer base64:
-1. On Event: When `Cover Art Base64 (raw)` changes to
-2. Action: Change Icon with value from `Cover Art Base64 (raw)` (enable base64 option if the action provides one)
-
-If icons lag, reduce `Cover Art Max Width` or set `Cover Art Max Base64 Length`.
 
 ## Performance Notes (E3081)
 
@@ -142,6 +152,18 @@ If TouchPortal reports a performance warning:
 - Disable cover art if you do not need it.
 - Use `Minimal State Mode` for the smallest possible updates.
 - Use `Extended States Enabled` only if you need volume/mute/like/repeat/ID states.
+
+## Startup Status
+
+The state `ytmd.startupStatus` shows startup progress and quick guidance, such as:
+
+- `Plugin not running (Node.js 18+; restart TouchPortal)` when the plugin cannot start.
+- `TouchPortal connected; checking API` during initial connection.
+- `Ready` once the plugin is connected and running.
+- `Waiting for API` if the Companion API is unreachable.
+- `Companion token missing.` when a token is required.
+
+Place the state on a button or use a Dynamic Text Updater to surface this hint.
 
 ## Actions
 
@@ -175,6 +197,8 @@ Core states:
 - Song Title, Artist, Album
 - Has Song
 - Track State
+- Connection Status
+- Startup Status
 - Is Paused / Is Playing
 
 Extended states (when enabled):
@@ -217,6 +241,7 @@ Move-Item -Force $zipPath $tppPath
 
 ## Troubleshooting
 
+- Shows "Disconnected" and nothing works: install Node.js 18+ and restart TouchPortal so the plugin can see `node` in PATH.
 - Error 429 on Connection Status: set Poll Interval >= 6000 ms, and make sure only one Companion client is using the token. Remove old plugin versions and generate a new token if needed.
 - Action failed (HTTP 429): commands are rate-limited (about 2 per second). Avoid rapid taps and macros that send repeated commands.
 - Token generation fails (HTTP 400): verify Companion Authorization is enabled in YouTube Music Desktop.
@@ -225,6 +250,7 @@ Move-Item -Force $zipPath $tppPath
 - Cover art missing: in TouchPortal 4.4 Build 6, button icons do not accept URLs. Use `Cover Art Path` or `Cover Art Base64 (raw)`. Check `Cover Art Debug` for errors and reduce cover size if laggy.
 - E3081 performance warning: increase Poll Interval, disable cover art or extended states, enable Minimal State Mode, and confirm only one plugin instance is running.
 - Not updating: check Connection Status in TouchPortal settings.
+- Need diagnostics: enable `Debug Log Enabled` and inspect `%APPDATA%\\TouchPortal\\plugins\\com.hellblazer90.ytmdesktop.v2\\ytmd_plugin.log` (rotates into `ytmd_plugin.prev.log`).
 
 ## Uninstall
 
